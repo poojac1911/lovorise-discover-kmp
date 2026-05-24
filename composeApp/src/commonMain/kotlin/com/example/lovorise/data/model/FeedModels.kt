@@ -8,6 +8,7 @@ sealed class FeedItem {
 data class Story(
     val id: String,
     val images: List<String>,
+    val videoUrl: String? = null,
     val author: Author,
     val caption: String,
     val timeAgo: String,

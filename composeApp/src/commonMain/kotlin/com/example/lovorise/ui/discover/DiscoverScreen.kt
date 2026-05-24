@@ -2,17 +2,13 @@ package com.example.lovorise.ui.discover
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.WavyProgressIndicatorDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.example.lovorise.ui.components.PremiumCircularProgressIndicator
 import com.example.lovorise.data.mock.MockData
@@ -36,16 +32,14 @@ fun DiscoverScreen() {
         }
     }
 
-    // Handle tab changes - Must be at top level or it will be cancelled when isLoadingInitial changes
     LaunchedEffect(selectedTab) {
         isLoadingMore = false
         isLoadingInitial = true
         delay(800)
-        // Filter content based on tab (simulated)
         feedItems = if (selectedTab == 0) {
             MockData.feedItems
         } else {
-            MockData.feedItems.filterIsInstance<FeedItem.ProfileItem>() // Connections show profiles
+            MockData.feedItems.filterIsInstance<FeedItem.ProfileItem>()
         }
         isLoadingInitial = false
     }
@@ -54,22 +48,25 @@ fun DiscoverScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .navigationBarsPadding() // Fixed: Pager now respects navigation bar area
     ) {
         if (isLoadingInitial) {
             SkeletonLoader()
         } else {
-            val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { feedItems.size })
+            val pagerState = rememberPagerState(pageCount = { feedItems.size })
 
-            androidx.compose.foundation.pager.VerticalPager(
+            VerticalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
                 beyondViewportPageCount = 1
             ) { index ->
                 val item = feedItems[index]
+                val isVisible = pagerState.currentPage == index
                 Box(modifier = Modifier.fillMaxSize()) {
                     when (item) {
                         is FeedItem.StoryItem -> StoryItem(
                             story = item.story,
+                            isVisible = isVisible,
                             modifier = Modifier.fillMaxSize()
                         )
                         is FeedItem.ProfileItem -> ProfileItem(
@@ -80,7 +77,6 @@ fun DiscoverScreen() {
                 }
             }
 
-            // Loading more indicator (centered overlay)
             if (isLoadingMore) {
                 Box(
                     modifier = Modifier
@@ -95,7 +91,6 @@ fun DiscoverScreen() {
                 }
             }
             
-            // Infinite scroll trigger
             LaunchedEffect(pagerState.currentPage, selectedTab) {
                 if (pagerState.currentPage >= feedItems.size - 2 && !isLoadingMore) {
                     isLoadingMore = true
@@ -104,10 +99,8 @@ fun DiscoverScreen() {
                     isLoadingMore = false
                 }
             }
-
         }
 
-        // Overlay Header - Moved outside the conditional to stay visible during loading
         FeedTabs(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
@@ -116,11 +109,8 @@ fun DiscoverScreen() {
                 .align(Alignment.TopCenter)
         )
 
-        // Overlay Bottom Nav - Moved outside the conditional to stay visible during loading
         BottomNavBar(
-            modifier = Modifier
-                .navigationBarsPadding()
-                .align(Alignment.BottomCenter)
+            modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
 }

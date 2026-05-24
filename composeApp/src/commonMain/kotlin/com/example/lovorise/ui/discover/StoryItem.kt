@@ -8,6 +8,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,10 +27,13 @@ import coil3.compose.AsyncImage
 import com.example.lovorise.data.model.Story
 import com.example.lovorise.ui.theme.PinkAccent
 import com.example.lovorise.ui.components.PremiumCircularProgressIndicator
+import com.example.lovorise.ui.components.VideoPlayer
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun StoryItem(
     story: Story,
+    isVisible: Boolean,
     modifier: Modifier = Modifier
 ) {
     val pagerState = rememberPagerState(pageCount = { story.images.size })
@@ -36,8 +43,52 @@ fun StoryItem(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Main Image Content
-        if (story.images.size > 1) {
+        // Main Content (Video or Image Pager)
+        if (story.videoUrl != null) {
+            var videoProgress by remember { mutableStateOf(0f) }
+            
+            Box(Modifier.fillMaxSize()) {
+                // Background Image/Fallback
+                coil3.compose.SubcomposeAsyncImage(
+                    model = story.images.firstOrNull(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            PremiumCircularProgressIndicator(
+                                size = 40.dp,
+                                color = PinkAccent
+                            )
+                        }
+                    }
+                )
+                
+                VideoPlayer(
+                    url = story.videoUrl,
+                    isVisible = isVisible,
+                    onProgress = { videoProgress = it },
+                    modifier = Modifier
+                )
+
+                // Video Progress Bar (Bottom)
+                LinearWavyProgressIndicator(
+                    progress = { videoProgress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 4.dp)
+                        .padding(bottom = 60.dp) // Positioned just above the BottomNavBar/Indicators area
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(1.dp)),
+                    color = PinkAccent,
+                    trackColor = Color.White,
+                )
+            }
+        } else if (story.images.size > 1) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -65,7 +116,7 @@ fun StoryItem(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 80.dp, end = 20.dp) // Below tabs
+                    .padding(top = 100.dp, end = 20.dp) // Below tabs
                     .background(Color.Black.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
@@ -136,7 +187,7 @@ fun StoryItem(
         }
         
         // Pager Indicators (dots)
-        if (story.images.size > 1) {
+        if (story.videoUrl == null && story.images.size > 1) {
             Row(
                 Modifier
                     .align(Alignment.BottomCenter)

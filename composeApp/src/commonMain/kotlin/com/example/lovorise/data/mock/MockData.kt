@@ -10,6 +10,7 @@ object MockData {
         Story(
             id = "1",
             images = listOf("https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=1000"),
+            videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4",
             author = Author("a1", "Kate Morrison", "https://i.pravatar.cc/150?u=kate"),
             caption = "Exploring the city lights tonight! ✨",
             timeAgo = "6 minutes ago",
@@ -35,6 +36,7 @@ object MockData {
         Story(
             id = "3",
             images = listOf("https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=1000"),
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             author = Author("a3", "Emma Wilson", "https://i.pravatar.cc/150?u=emma"),
             caption = "Sunday brunch vibes. 🥞🥓",
             timeAgo = "2 hours ago",
